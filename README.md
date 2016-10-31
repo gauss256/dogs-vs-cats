@@ -12,4 +12,4 @@ You should be able to recreate my environment in a new Conda environment via
 
 ```conda create -n new environment --file requirements.txt```
 
-but I've never actually tried this myself. The requirements list is scary long because it was automaticallygenerated. Many of the packages come with a standard Anaconda installation. I would just start with that and add libraries as they are found to be missing.
+but I've never actually tried this myself. The requirements list is scary long because it was automatically generated. Many of the packages come with a standard Anaconda installation. I would just start with that and add libraries as they are found to be missing.
