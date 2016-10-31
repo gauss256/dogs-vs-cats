@@ -1,1 +1,4 @@
 .ipynb_checkpoints/
+data/
+sample_submission.csv
+sizes.pkl
