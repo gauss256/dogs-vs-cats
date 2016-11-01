@@ -1,4 +1,29 @@
-"""Preprocess image data for Dogs vs. Cats competition"""
+"""
+Preprocess image data for Dogs vs. Cats competition
+https://www.kaggle.com/gauss256
+
+DESCRIPTION
+
+Most solutions for this competition will need to deal with the fact that the
+training and test images are of varying sizes and aspect ratios, and were taken
+under a variety of lighting conditions. It is typical in cases like this to
+preprocess the images to make them more uniform.
+
+By default this script will normalize the image luminance and resize to a
+square image of side length 224. The resizing preserves the aspect ratio and
+adds gray bars as necessary to make them square. The resulting images are
+stored in a folder named data224.
+
+The location of the input and output files, and the size of the images, can be
+controlled through the processing parameters below.
+
+INSTALLATION
+
+This script has been tested on Ubuntu 14.04 using the Anaconda distribution for
+Python 3.5. The only additional requirement is for the pillow library for image
+manipulation which can be installed via:
+    conda install pillow
+"""
 import glob
 from multiprocessing import Process
 import os
@@ -7,8 +32,8 @@ import re
 import numpy as np
 import PIL
 from PIL import Image
-from progressbar import ProgressBar
 
+# Processing parameters
 SIZE = 224  # for ImageNet models compatibility
 TEST_DIR = 'data/test/'
 TRAIN_DIR = 'data/train/'
@@ -20,35 +45,6 @@ def natural_key(string_):
     Define sort key that is integer-aware
     """
     return [int(s) if s.isdigit() else s for s in re.split(r'(\d+)', string_)]
-
-
-# def norm_image(img):
-#     """
-#     Normalize PIL image
-
-#     Normalizes each color channel to (mean,std)=(0,1), and applies a [1%, 99%] contrast stretch
-#     """
-#     # Convert to a NumPy array
-#     # The array will be transposed, but it doesn't matter, so we leave it
-#     img_nrm = np.asarray(img).astype(float)
-#     clrs = img_nrm.shape[2]
-
-#     # Normalize the image to [0,1]
-#     for clr in range(clrs):
-#         img_p = img_nrm[..., clr] / 255
-#         img_p -= img_p.mean()
-#         img_p /= img_p.std()
-#         scale = np.max([np.abs(np.percentile(img_p, 1.0)),
-#                         np.abs(np.percentile(img_p, 99.0))])
-#         img_p = img_p / scale
-#         img_p = np.clip(img_p, -1.0, 1.0)
-#         img_p = (img_p + 1.0) / 2.0
-#         img_nrm[..., clr] = img_p
-
-#     # Convert back to PIL image
-#     img_nrm = (img_nrm * 255 + 0.5).astype(np.uint8)
-
-#     return Image.fromarray(img_nrm)
 
 
 def norm_image(img):
@@ -112,18 +108,15 @@ def prep_images(paths, out_dir):
     Reads images in paths, and writes to out_dir
 
     """
-    n_paths = len(paths)
-    with ProgressBar(max_value=n_paths) as progress:
-        for count, path in enumerate(paths):
-            # if count % 100 == 0:
-            #     print(path)
-            img = Image.open(path)
-            img_nrm = norm_image(img)
-            img_res = resize_image(img_nrm, SIZE)
-            basename = os.path.basename(path)
-            path_out = os.path.join(out_dir, basename)
-            img_res.save(path_out)
-            progress.update(count)
+    for count, path in enumerate(paths):
+        if count % 100 == 0:
+            print(path)
+        img = Image.open(path)
+        img_nrm = norm_image(img)
+        img_res = resize_image(img_nrm, SIZE)
+        basename = os.path.basename(path)
+        path_out = os.path.join(out_dir, basename)
+        img_res.save(path_out)
 
 
 def main():
@@ -132,16 +125,11 @@ def main():
     # Get the paths to all the image files
     train_cats = sorted(glob.glob(os.path.join(TRAIN_DIR, 'cat*.jpg')), key=natural_key)
     train_dogs = sorted(glob.glob(os.path.join(TRAIN_DIR, 'dog*.jpg')), key=natural_key)
-    # train_all = train_cats + train_dogs
 
     test_all = sorted(glob.glob(os.path.join(TEST_DIR, '*.jpg')), key=natural_key)
 
     # Make the output directories
     base_out = os.path.join(BASE_DIR, 'data{}'.format(SIZE))
-    #!!!
-    # if os.path.isdir(base_out):
-    #     raise RuntimeError('Output directory {} already exists'.format(base_out))
-    #!!!
     train_dir_out = os.path.join(base_out, 'train')
     test_dir_out = os.path.join(base_out, 'test')
     os.makedirs(train_dir_out, exist_ok=True)
