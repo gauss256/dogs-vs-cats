@@ -22,34 +22,63 @@ def natural_key(string_):
     return [int(s) if s.isdigit() else s for s in re.split(r'(\d+)', string_)]
 
 
+# def norm_image(img):
+#     """
+#     Normalize PIL image
+
+#     Normalizes each color channel to (mean,std)=(0,1), and applies a [1%, 99%] contrast stretch
+#     """
+#     # Convert to a NumPy array
+#     # The array will be transposed, but it doesn't matter, so we leave it
+#     img_nrm = np.asarray(img).astype(float)
+#     clrs = img_nrm.shape[2]
+
+#     # Normalize the image to [0,1]
+#     for clr in range(clrs):
+#         img_p = img_nrm[..., clr] / 255
+#         img_p -= img_p.mean()
+#         img_p /= img_p.std()
+#         scale = np.max([np.abs(np.percentile(img_p, 1.0)),
+#                         np.abs(np.percentile(img_p, 99.0))])
+#         img_p = img_p / scale
+#         img_p = np.clip(img_p, -1.0, 1.0)
+#         img_p = (img_p + 1.0) / 2.0
+#         img_nrm[..., clr] = img_p
+
+#     # Convert back to PIL image
+#     img_nrm = (img_nrm * 255 + 0.5).astype(np.uint8)
+
+#     return Image.fromarray(img_nrm)
+
+
 def norm_image(img):
     """
     Normalize PIL image
 
-    Normalizes each color channel to (mean,std)=(0,1), and applies a [1%, 99%] contrast stretch
+    Normalizes luminance to (mean,std)=(0,1), and applies a [1%, 99%] contrast stretch
     """
-    # Convert to a NumPy array
-    # The array will be transposed, but it doesn't matter, so we leave it
-    img_nrm = np.asarray(img).astype(float)
-    clrs = img_nrm.shape[2]
+    img_y, img_b, img_r = img.convert('YCbCr').split()
 
-    # Normalize the image to [0,1]
-    for clr in range(clrs):
-        img_p = img_nrm[..., clr] / 255
-        img_p -= img_p.mean()
-        img_p /= img_p.std()
-        scale = np.max([np.abs(np.percentile(img_p, 1.0)),
-                        np.abs(np.percentile(img_p, 99.0))])
-        img_p = img_p / scale
-        img_p = np.clip(img_p, -1.0, 1.0)
-        img_p = (img_p + 1.0) / 2.0
-        img_nrm[..., clr] = img_p
+    img_y_np = np.asarray(img_y).astype(float)
 
-    # Convert back to PIL image
-    img_nrm = (img_nrm * 255 + 0.5).astype(np.uint8)
+    img_y_np /= 255
+    img_y_np -= img_y_np.mean()
+    img_y_np /= img_y_np.std()
+    scale = np.max([np.abs(np.percentile(img_y_np, 1.0)),
+                    np.abs(np.percentile(img_y_np, 99.0))])
+    img_y_np = img_y_np / scale
+    img_y_np = np.clip(img_y_np, -1.0, 1.0)
+    img_y_np = (img_y_np + 1.0) / 2.0
 
-    return Image.fromarray(img_nrm)
+    img_y_np = (img_y_np * 255 + 0.5).astype(np.uint8)
 
+    img_y = Image.fromarray(img_y_np)
+
+    img_ybr = Image.merge('YCbCr', (img_y, img_b, img_r))
+
+    img_nrm = img_ybr.convert('RGB')
+
+    return img_nrm
 
 def resize_image(img, size):
     """

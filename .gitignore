@@ -1,4 +1,7 @@
 .ipynb_checkpoints/
 data/
+data224/
+*.jpg
+*.png
 sample_submission.csv
 sizes.pkl
