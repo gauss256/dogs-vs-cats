@@ -137,7 +137,7 @@ patsy=0.4.1=py35_0
 pep8=1.7.0=py35_0
 pexpect=4.0.1=py35_0
 pickleshare=0.7.2=py35_0
-pillow=3.2.0=py35_1
+pillow~>3.3.2=py35_1
 pip=8.1.2=py35_0
 plac=0.9.6=py35_0
 ply=3.8=py35_0
